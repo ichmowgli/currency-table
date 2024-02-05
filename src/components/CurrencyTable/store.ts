@@ -9,7 +9,7 @@ type CurrencyStore = {
 };
 
 export const useCurrencyStore = create<CurrencyStore>((set, get) => ({
-  currencies: ['EUR', 'PLN', 'GEL', 'DKK', 'CZK', 'GBP', 'SEK', 'USD', 'RUB'],
+  currencies: ['EUR', 'PLN', 'GEL', 'DKK', 'CZK', 'GBP', 'SEK', 'USD', 'UAH'],
   selected: [],
   isSelected: (c) => {
     return get().selected.includes(c);
