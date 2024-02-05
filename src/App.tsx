@@ -1,31 +1,91 @@
-import { useState } from 'react';
+import "./App.css";
+import { create } from "zustand";
 
-import './App.css';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+type CurrencyStore = {
+  currencies: string[];
+  selected: string[];
+  isSelected: (currency: string) => boolean;
+  select: (currency: string) => void;
+  deselect: (currency: string) => void;
+};
 
-function App() {
-  const [count, setCount] = useState(0);
+const useCurrencyStore = create<CurrencyStore>((set, get) => ({
+  currencies: ["EUR", "PLN", "GEL", "DKK", "CZK", "GBP", "SEK", "USD", "RUB"],
+  selected: [],
+  isSelected: (c) => {
+    return get().selected.includes(c);
+  },
+  select: (c) => {
+    if (get().isSelected(c)) {
+      return;
+    }
+
+    set({
+      selected: get().selected.concat(c),
+    });
+  },
+  deselect: (c) => {
+    if (!get().isSelected(c)) {
+      return;
+    }
+
+    set({
+      selected: get().selected.filter((item) => item !== c),
+    });
+  },
+}));
+
+function SelectableCurrencyItem({ currency }: { currency: string }) {
+  const { select, deselect, isSelected } = useCurrencyStore();
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="bg-gray-300">
+      <input
+        type="checkbox"
+        id={currency}
+        checked={isSelected(currency)}
+        onChange={(e) => {
+          if (e.target.checked) {
+            select(currency);
+          } else {
+            deselect(currency);
+          }
+        }}
+      />
+      <label htmlFor={currency}>{currency}</label>
+    </div>
+  );
+}
+
+function CurrencyWithDeselectChip({ currency }: { currency: string }) {
+  const { deselect } = useCurrencyStore();
+
+  return (
+    <div className="bg-gray-300">
+      {currency}{" "}
+      <button className="text-red-600" onClick={() => deselect(currency)}>
+        X
+      </button>
+    </div>
+  );
+}
+
+function App() {
+  const store = useCurrencyStore();
+
+  return (
+    <div className="border-2 border-red-600 flex flex-col w-fit mx-auto gap-5">
+      <div className="grid grid-cols-3  gap-2 m-2">
+        {store.selected.map((c) => (
+          <CurrencyWithDeselectChip currency={c} />
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="grid grid-cols-3 gap-2 m-2">
+        {store.currencies.map((c) => (
+          <SelectableCurrencyItem currency={c} />
+        ))}
       </div>
-      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-    </>
+    </div>
   );
 }
 
